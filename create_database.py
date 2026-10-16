@@ -69,7 +69,7 @@ def save_to_chroma(chunks: list[Document]):
     chunks,
     embedding_function,
     persist_directory=CHROMA_PATH,
-    collection_name="alice_in_wonderland"
+    collection_name="HR_Handbook"
     )
     # db.persist()
     print(f"Saved {len(chunks)} chunks to {CHROMA_PATH}.")

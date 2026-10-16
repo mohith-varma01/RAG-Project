@@ -30,7 +30,7 @@ def main():
     db = Chroma(
         persist_directory=CHROMA_PATH, 
         embedding_function=embedding_function,
-        collection_name="alice_in_wonderland"
+        collection_name="HR_Handbook"
     )
 
     # Search the DB.
