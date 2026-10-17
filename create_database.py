@@ -43,6 +43,8 @@ def split_text(documents: list[Document]):
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=400,
         chunk_overlap=350,
+        #chunk_size=800,
+        #chunk_overlap=120,
         length_function=len,
         add_start_index=True,
     )
