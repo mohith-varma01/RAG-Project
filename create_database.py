@@ -1,6 +1,9 @@
 # from langchain.document_loaders import DirectoryLoader
 from chromadb import db
-from langchain_community.document_loaders import DirectoryLoader
+from langchain_community.document_loaders import (
+    DirectoryLoader,
+    PyPDFLoader,
+)
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.schema import Document
 # from langchain.embeddings import OpenAIEmbeddings
@@ -34,17 +37,39 @@ def generate_data_store():
 
 
 def load_documents():
-    loader = DirectoryLoader(DATA_PATH, glob="*.md")
-    documents = loader.load()
+     # Load Markdown files
+    md_loader = DirectoryLoader(
+        DATA_PATH,
+        glob="*.md",
+        show_progress=True
+    )
+    md_documents = md_loader.load()
+
+    # Load PDF files
+    pdf_loader = DirectoryLoader(
+        DATA_PATH,
+        glob="*.pdf",
+        loader_cls=PyPDFLoader,
+        show_progress=True
+    )
+    pdf_documents = pdf_loader.load()
+
+    # Combine both document types
+    documents = md_documents + pdf_documents
+
+    print(f"Loaded {len(md_documents)} Markdown documents.")
+    print(f"Loaded {len(pdf_documents)} PDF pages.")
+
     return documents
+
 
 
 def split_text(documents: list[Document]):
     text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=400,
-        chunk_overlap=350,
-        #chunk_size=800,
-        #chunk_overlap=120,
+        #chunk_size=400,
+        #chunk_overlap=350,
+        chunk_size=600,
+        chunk_overlap=200,
         length_function=len,
         add_start_index=True,
     )
@@ -65,8 +90,12 @@ def save_to_chroma(chunks: list[Document]):
 
     # Create a new DB from the documents.
     embedding_function = HuggingFaceEmbeddings(
-        model_name="sentence-transformers/all-MiniLM-L6-v2"
+        model_name="sentence-transformers/all-MiniLM-L6-v2",
+        model_kwargs={
+            "local_files_only": True
+        }
     )
+    
     db = Chroma.from_documents(
     chunks,
     embedding_function,

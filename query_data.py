@@ -6,6 +6,8 @@ from langchain_community.vectorstores import Chroma
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain.prompts import ChatPromptTemplate
 from langchain_community.llms import Ollama
+from functools import lru_cache
+from langchain_community.embeddings import HuggingFaceEmbeddings
 
 CHROMA_PATH = "chroma"
 
@@ -37,6 +39,7 @@ Answer the question based on the above context: {question}
 # """
 
 
+
 def main():
     # Create CLI.
     parser = argparse.ArgumentParser()
@@ -46,14 +49,19 @@ def main():
 
     start = time.perf_counter()
 
-    # Prepare the DB.
-    embedding_function = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+    @lru_cache(maxsize=1)
+    def get_embedding_function():
+        return HuggingFaceEmbeddings(
+            model_name="sentence-transformers/all-MiniLM-L6-v2"
+        )
+
+    embedding_function = get_embedding_function()
 
     print("Embedding initialization:", round(
     time.perf_counter() - start, 2
     ), "seconds")
 
-
+    
     db = Chroma(
         persist_directory=CHROMA_PATH, 
         embedding_function=embedding_function,
